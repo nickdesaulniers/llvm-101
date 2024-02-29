@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>LLVM 101</title>
+
+    <link rel="stylesheet" href="dist/reset.css">
+    <link rel="stylesheet" href="dist/reveal.css">
+    <link rel="stylesheet" href="dist/theme/black.css">
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section data-markdown><textarea data-template>
+          # LLVM 101
+          ## Nick Desaulniers
+          ![](LLVMWyvernSmall.webp)
+          ---
+          ### What is the LLVM Project?
+          A set of reusable C++ classes for implementing a toolchain. "Compiler
+          Legos."
+          ---
+          ### llvm-project
+          - binaries:
+            - clang: c/c++/objective-c compiler
+            - flang: fortran compiler
+            - lld: linker
+            - lldb: debugger
+          - runtimes:
+            - libc: c runtime
+            - libcxx: c++ runtime
+            - compiler-rt: compiler runtime
+          - MLIR: next-gen compiler infra generator
+          - ...
+          ---
+          ### LLVM IR
+          ![](RetargetableCompiler2.png)
+          ---
+          ### LLVM IR
+          ![](llvmir2.png)
+          ---
+          ### Example LLVM IR
+          ```c
+          void foo (int* a, int x, int y) {
+            for (size_t i = 0; i < 100; ++i)
+              a[i] = x + y;
+          }
+          ```
+          is roughly equivalent to:
+          ```llvm
+          define void @foo(ptr %a, i32 %x, i32 %y) {
+          entry:
+            %add = add i32 %y, %x
+            br label %for
+          for:
+            %i = phi i64 [ 0, %entry ], [ %inc, %for ]
+            %a_i = getelementptr i32, ptr %a, i64 %i
+            store i32 %add, ptr %a_i
+            %inc = add i64 %i, 1
+            %exit = icmp eq i64 %inc, 100
+            br i1 %exit, label %for, label %done
+          done:
+            ret void
+          }
+          ```
+          ---
+          ### LLVM IR
+          Some things we notice:
+          - Single Static Assignment (SSA)
+          - Phi nodes
+          - Pointers are opaque (no type)
+          ---
+          TODO: more slides
+          ---
+          ### More References
+          - [Homepage](https://llvm.org/) - llvm.org
+          - [Sources](https://github.com/llvm/llvm-project) - GitHub
+          - [Issue Tracker](https://github.com/llvm/llvm-project/issues) - GitHub
+          - [The Architecture of Open Source Applications](https://aosabook.org/en/v1/llvm.html) chapter on LLVM
+          - [LLVM Language Reference Material](https://llvm.org/docs/LangRef.html) aka LangRef
+        </textarea></section>
+      </div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script>
+      // More info about initialization & config:
+      // - https://revealjs.com/initialization/
+      // - https://revealjs.com/config/
+      Reveal.initialize({
+        hash: true,
+        plugins: [ RevealMarkdown, RevealHighlight ]
+      });
+    </script>
+  </body>
+</html>
